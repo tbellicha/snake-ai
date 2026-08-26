@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Run a script with the project venv. Cursor's terminal rewrites sys.executable
+# to Cursor.AppImage, which makes a normal `python train.py` miss venv packages.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+VENV="$ROOT/.venv"
+if [ ! -x "$VENV/bin/python" ]; then
+  echo "Missing $VENV. Create it with:" >&2
+  echo "  /usr/bin/python3 -m venv .venv && .venv/bin/pip install -r requirements.txt" >&2
+  exit 1
+fi
+
+# env -i clears Cursor's AppImage hijack. Only forward vars that are actually
+# set — an empty SDL_VIDEODRIVER/DISPLAY makes pygame fail with
+# "windows not available".
+forward_vars=(HOME USER LOGNAME TERM PATH SHELL LANG LC_ALL LC_CTYPE
+  DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR XDG_SESSION_TYPE
+  XDG_CURRENT_DESKTOP DESKTOP_SESSION
+  DBUS_SESSION_BUS_ADDRESS GDK_BACKEND QT_QPA_PLATFORM
+  SDL_VIDEODRIVER SDL_AUDIODRIVER)
+
+env_args=(PATH="$VENV/bin:/usr/bin:/bin:/usr/local/bin")
+for name in "${forward_vars[@]}"; do
+  if [ "$name" = PATH ]; then
+    continue
+  fi
+  if [ -n "${!name:-}" ]; then
+    env_args+=("$name=${!name}")
+  fi
+done
+
+exec env -i "${env_args[@]}" "$VENV/bin/python" "$@"
