@@ -31,11 +31,10 @@ class Linear_QNet(nn.Module):
 
 
 class QTrainer:
-    def __init__(self, model, target_model, lr, gamma):
+    def __init__(self, model, lr, gamma):
         self.lr = lr
         self.gamma = gamma
         self.model = model
-        self.target_model = target_model
         self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
 
@@ -52,16 +51,13 @@ class QTrainer:
             reward = torch.unsqueeze(reward, 0)
             done = (done,)
 
-        done_mask = torch.tensor(done, dtype=torch.bool).reshape(-1)
-
         pred = self.model(state)
-        with torch.no_grad():
-            max_next = torch.max(self.target_model(next_state), dim=1)[0]
-            q_new = reward + self.gamma * max_next * (~done_mask).float()
-
         target = pred.clone()
-        action_idx = torch.argmax(action, dim=1)
-        target[range(len(target)), action_idx] = q_new
+        for idx in range(len(done)):
+            q_new = reward[idx]
+            if not done[idx]:
+                q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
+            target[idx][torch.argmax(action[idx]).item()] = q_new
 
         self.optimizer.zero_grad()
         loss = self.criterion(target, pred)
