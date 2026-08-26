@@ -55,7 +55,6 @@ class SnakeGameAI:
         self._place_food()
         self.frame_iteration = 0
         self.visited_since_food = set()
-        self.loop_debt = 0.0
 
     def _place_food(self):
         x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
@@ -88,16 +87,10 @@ class SnakeGameAI:
             reward = 10
             self._place_food()
             self.visited_since_food = set()
-            self.loop_debt = 0.0
         else:
             self.snake.pop()
             if self.head in self.visited_since_food:
-                penalty = 1.0 / len(self.snake)
-                reward -= penalty
-                self.loop_debt += penalty
-                while self.loop_debt >= 1 and self.score > 0:
-                    self.score -= 1
-                    self.loop_debt -= 1
+                reward -= 1.0 / len(self.snake)
             else:
                 self.visited_since_food.add(self.head)
 
