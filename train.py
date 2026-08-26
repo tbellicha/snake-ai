@@ -29,6 +29,7 @@ def train(render=True, speed=40, max_games=None):
             game.reset()
             agent.n_games += 1
             agent.train_long_memory()
+            agent.update_target()
 
             if score > record:
                 record = score

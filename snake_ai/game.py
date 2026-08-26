@@ -12,8 +12,8 @@ Point = namedtuple("Point", "x, y")
 BLOCK_SIZE = 20
 WHITE = (255, 255, 255)
 RED = (200, 0, 0)
-BLUE1 = (0, 0, 255)
-BLUE2 = (0, 100, 255)
+BODY = (0, 130, 50)
+BODY_INNER = (40, 180, 80)
 HEAD = (0, 180, 90)
 HEAD_INNER = (80, 240, 140)
 EYE = (20, 20, 20)
@@ -116,10 +116,10 @@ class SnakeGameAI:
         self.display.fill(BLACK)
         for pt in self.snake[1:]:
             pygame.draw.rect(
-                self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE)
+                self.display, BODY, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE)
             )
             pygame.draw.rect(
-                self.display, BLUE2, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12)
+                self.display, BODY_INNER, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12)
             )
         self._draw_head()
         pygame.draw.rect(
