@@ -14,6 +14,9 @@ WHITE = (255, 255, 255)
 RED = (200, 0, 0)
 BLUE1 = (0, 0, 255)
 BLUE2 = (0, 100, 255)
+HEAD = (0, 180, 90)
+HEAD_INNER = (80, 240, 140)
+EYE = (20, 20, 20)
 BLACK = (0, 0, 0)
 
 
@@ -111,13 +114,14 @@ class SnakeGameAI:
 
     def _update_ui(self):
         self.display.fill(BLACK)
-        for pt in self.snake:
+        for pt in self.snake[1:]:
             pygame.draw.rect(
                 self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE)
             )
             pygame.draw.rect(
                 self.display, BLUE2, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12)
             )
+        self._draw_head()
         pygame.draw.rect(
             self.display,
             RED,
@@ -126,6 +130,34 @@ class SnakeGameAI:
         text = self.font.render("Score: " + str(self.score), True, WHITE)
         self.display.blit(text, [0, 0])
         pygame.display.flip()
+
+    def _draw_head(self):
+        pt = self.head
+        pygame.draw.rect(
+            self.display,
+            HEAD,
+            pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE),
+            border_radius=7,
+        )
+        pygame.draw.rect(
+            self.display,
+            HEAD_INNER,
+            pygame.Rect(pt.x + 3, pt.y + 3, 14, 14),
+            border_radius=5,
+        )
+
+        if self.direction == Direction.RIGHT:
+            eyes = ((pt.x + 14, pt.y + 5), (pt.x + 14, pt.y + 15))
+        elif self.direction == Direction.LEFT:
+            eyes = ((pt.x + 6, pt.y + 5), (pt.x + 6, pt.y + 15))
+        elif self.direction == Direction.UP:
+            eyes = ((pt.x + 5, pt.y + 6), (pt.x + 15, pt.y + 6))
+        else:
+            eyes = ((pt.x + 5, pt.y + 14), (pt.x + 15, pt.y + 14))
+
+        for x, y in eyes:
+            pygame.draw.circle(self.display, WHITE, (int(x), int(y)), 3)
+            pygame.draw.circle(self.display, EYE, (int(x), int(y)), 1)
 
     def _move(self, action):
         # action is one-hot [straight, right, left]
